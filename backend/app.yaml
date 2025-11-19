@@ -1,0 +1,7 @@
+runtime: nodejs18
+env: standard
+entrypoint: npm start
+
+handlers:
+- url: /.*
+  script: auto

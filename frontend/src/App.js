@@ -5,6 +5,10 @@ import Dashboard from './components/Dashboard';
 import WaterLogger from './components/WaterLogger';
 import TipsSection from './components/TipsSection';
 
+// Set API URL from environment or default to localhost
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+axios.defaults.baseURL = API_URL;
+
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);

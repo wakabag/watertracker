@@ -1,0 +1,10 @@
+[build]
+command = "npm install"
+
+[env]
+REACT_APP_API_URL = "https://water-tracker-api.onrender.com"
+
+[[redirects]]
+from = "/*"
+to = "/index.html"
+status = 200
