@@ -4,43 +4,49 @@ import axios from 'axios';
 function Dashboard({ user, onMessage }) {
   const [dailyUsage, setDailyUsage] = useState(0);
   const [history, setHistory] = useState([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (user) {
-      fetchDailyUsage();
-      fetchHistory();
-    }
-  }, [user]);
+    if (!user) return;
 
-  const fetchDailyUsage = async () => {
-    try {
-      const response = await axios.get(`/api/usage/daily/${user.id}`);
-      setDailyUsage(response.data.total);
-    } catch (error) {
-      console.error('Error fetching daily usage:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    // define and call fetch functions inside useEffect to satisfy eslint
+    const fetchDailyUsage = async () => {
+      try {
+        const response = await axios.get(`/api/usage/daily/${user.id}`);
+        setDailyUsage(response.data.total || 0);
+      } catch (error) {
+        console.error('Error fetching daily usage:', error);
+      }
+    };
 
-  const fetchHistory = async () => {
-    try {
-      const response = await axios.get(`/api/usage/history/${user.id}?days=30`);
-      setHistory(response.data);
-    } catch (error) {
-      console.error('Error fetching history:', error);
-    }
-  };
+    const fetchHistory = async () => {
+      try {
+        const response = await axios.get(`/api/usage/history/${user.id}?days=30`);
+        setHistory(response.data || []);
+      } catch (error) {
+        console.error('Error fetching history:', error);
+      }
+    };
 
-  const handleRefresh = () => {
     fetchDailyUsage();
     fetchHistory();
-    onMessage('Data refreshed successfully!');
+  }, [user]);
+
+  const handleRefresh = async () => {
+    if (!user) return;
+    try {
+      const resp = await axios.get(`/api/usage/daily/${user.id}`);
+      setDailyUsage(resp.data.total || 0);
+      const hist = await axios.get(`/api/usage/history/${user.id}?days=30`);
+      setHistory(hist.data || []);
+      onMessage('Data refreshed successfully!');
+    } catch (err) {
+      console.error('Error refreshing data:', err);
+      onMessage('Error refreshing data', 'error');
+    }
   };
 
-  const remainingWater = Math.max(0, user.daily_goal - dailyUsage);
-  const percentUsed = Math.min(100, (dailyUsage / user.daily_goal) * 100);
+  const remainingWater = user ? Math.max(0, user.daily_goal - dailyUsage) : 0;
+  const percentUsed = user && user.daily_goal ? Math.min(100, (dailyUsage / user.daily_goal) * 100) : 0;
 
   return (
     <div className="card">
